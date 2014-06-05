@@ -60,7 +60,6 @@ World::World()
     mTime(0.0),
     mTimeStep(0.001),
     mFrame(0),
-    mIntegrator(new integration::SemiImplicitEulerIntegrator()),
     mConstraintSolver(new constraint::ConstraintSolver(mTimeStep)),
     mRecording(new Recording(mSkeletons))
 {
@@ -70,7 +69,6 @@ World::World()
 //==============================================================================
 World::~World()
 {
-  delete mIntegrator;
   delete mConstraintSolver;
   delete mRecording;
 

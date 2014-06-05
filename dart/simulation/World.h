@@ -53,10 +53,6 @@
 
 namespace dart {
 
-namespace integration {
-class Integrator;
-}  // namespace integration
-
 namespace dynamics {
 class Skeleton;
 }  // namespace dynamics
@@ -182,9 +178,6 @@ protected:
 
   /// Current simulation frame number
   int mFrame;
-
-  /// The integrator
-  integration::Integrator* mIntegrator;
 
   /// Constraint solver
   constraint::ConstraintSolver* mConstraintSolver;
