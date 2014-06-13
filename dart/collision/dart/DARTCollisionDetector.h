@@ -42,13 +42,14 @@
 namespace dart {
 namespace collision {
 
-/// \brief
-class DARTCollisionDetector : public CollisionDetector {
+/// class DARTCollisionDetector
+class DARTCollisionDetector : public CollisionDetector
+{
 public:
-  /// \brief Default constructor
+  /// Constructor
   DARTCollisionDetector();
 
-  /// \brief Default destructor
+  /// Destructor
   virtual ~DARTCollisionDetector();
 
   // Documentation inherited
