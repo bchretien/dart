@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014, Georgia Tech Research Corporation
+ * Copyright (c) 2014, Georgia Tech Research Corporation
  * All rights reserved.
  *
  * Author(s): Jeongseok Lee <jslee02@gmail.com>
@@ -34,11 +34,14 @@
  *   POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef  DART_COLLISION_DART_DARTCOLLISIONDETECTOR_H_
-#define  DART_COLLISION_DART_DARTCOLLISIONDETECTOR_H_
+#ifndef DART_COLLISION_DART_NARROWPHASEALGORITHM_H_
+#define DART_COLLISION_DART_NARROWPHASEALGORITHM_H_
+
+#include <vector>
+
+#include <Eigen/Dense>
 
 #include "dart/collision/CollisionDetector.h"
-#include "dart/collision/dart/NarrowPhaseAlgorithm.h"
 
 namespace dart {
 namespace dynamics {
@@ -49,41 +52,54 @@ class Shape;
 namespace dart {
 namespace collision {
 
-class NarrowPhaseAlgorithm;
-
-/// class DARTCollisionDetector
-class DARTCollisionDetector : public CollisionDetector
+/// class NarrowPhaseAlgorithm
+class NarrowPhaseAlgorithm
 {
 public:
   /// Constructor
-  DARTCollisionDetector();
+  NarrowPhaseAlgorithm();
 
   /// Destructor
-  virtual ~DARTCollisionDetector();
+  virtual ~NarrowPhaseAlgorithm();
 
-  // Documentation inherited
-  virtual CollisionNode* createCollisionNode(dynamics::BodyNode* _bodyNode);
-
-  // Documentation inherited
-  virtual bool detectCollision(bool _checkAllCollisions,
-                               bool _calculateContactPoints);
-
-protected:
-  // Documentation inherited
-  virtual bool detectCollision(CollisionNode* _collNode1,
-                               CollisionNode* _collNode2,
-                               bool _calculateContactPoints);
-
-  ///
-  NarrowPhaseAlgorithm* selectNarrowPhaseAlgorithm(
-      const dynamics::Shape* _shape1, const dynamics::Shape* _shape2);
+  /// Return true if the two bidies collide
+  virtual bool collide(dynamics::Shape* _shape1,
+                       const Eigen::Isometry3d& _T1,
+                       dynamics::Shape* _shape2,
+                       const Eigen::Isometry3d& _T2,
+                       std::vector<Contact>* _result) = 0;
 
 protected:
-  ///
-  BoxBoxAlgorithm mBoxBoxAlgorithm;
+
+private:
+
+};
+
+/// class BoxBoxAlgorithm
+class BoxBoxAlgorithm : public NarrowPhaseAlgorithm
+{
+public:
+  /// Constructor
+  BoxBoxAlgorithm();
+
+  /// Destructor
+  virtual ~BoxBoxAlgorithm();
+
+  // Documentation inherited
+  virtual bool collide(dynamics::Shape* _shape1,
+                       const Eigen::Isometry3d& _T1,
+                       dynamics::Shape* _shape2,
+                       const Eigen::Isometry3d& _T2,
+                       std::vector<Contact>* _result);
+protected:
+
+private:
+
 };
 
 }  // namespace collision
 }  // namespace dart
 
-#endif  // DART_COLLISION_DART_DARTCOLLISIONDETECTOR_H_
+#endif  // DART_COLLISION_DART_NARROWPHASEALGORITHM_H_
+
+

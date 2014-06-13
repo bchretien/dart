@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014, Georgia Tech Research Corporation
+ * Copyright (c) 2014, Georgia Tech Research Corporation
  * All rights reserved.
  *
  * Author(s): Jeongseok Lee <jslee02@gmail.com>
@@ -34,56 +34,53 @@
  *   POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef  DART_COLLISION_DART_DARTCOLLISIONDETECTOR_H_
-#define  DART_COLLISION_DART_DARTCOLLISIONDETECTOR_H_
-
-#include "dart/collision/CollisionDetector.h"
 #include "dart/collision/dart/NarrowPhaseAlgorithm.h"
 
-namespace dart {
-namespace dynamics {
-class Shape;
-}  // namespace dynamics
-}  // namespace dart
+#include "dart/collision/dart/DARTCollide.h"
+#include "dart/dynamics/BoxShape.h"
+#include "dart/dynamics/EllipsoidShape.h"
+#include "dart/dynamics/CylinderShape.h"
 
 namespace dart {
 namespace collision {
 
-class NarrowPhaseAlgorithm;
-
-/// class DARTCollisionDetector
-class DARTCollisionDetector : public CollisionDetector
+//==============================================================================
+NarrowPhaseAlgorithm::NarrowPhaseAlgorithm()
 {
-public:
-  /// Constructor
-  DARTCollisionDetector();
 
-  /// Destructor
-  virtual ~DARTCollisionDetector();
+}
 
-  // Documentation inherited
-  virtual CollisionNode* createCollisionNode(dynamics::BodyNode* _bodyNode);
+//==============================================================================
+NarrowPhaseAlgorithm::~NarrowPhaseAlgorithm()
+{
 
-  // Documentation inherited
-  virtual bool detectCollision(bool _checkAllCollisions,
-                               bool _calculateContactPoints);
+}
 
-protected:
-  // Documentation inherited
-  virtual bool detectCollision(CollisionNode* _collNode1,
-                               CollisionNode* _collNode2,
-                               bool _calculateContactPoints);
+//==============================================================================
+BoxBoxAlgorithm::BoxBoxAlgorithm()
+  : NarrowPhaseAlgorithm()
+{
 
-  ///
-  NarrowPhaseAlgorithm* selectNarrowPhaseAlgorithm(
-      const dynamics::Shape* _shape1, const dynamics::Shape* _shape2);
+}
 
-protected:
-  ///
-  BoxBoxAlgorithm mBoxBoxAlgorithm;
-};
+//==============================================================================
+BoxBoxAlgorithm::~BoxBoxAlgorithm()
+{
+
+}
+
+//==============================================================================
+bool BoxBoxAlgorithm::collide(dynamics::Shape* _shape1,
+                              const Eigen::Isometry3d& _T1,
+                              dynamics::Shape* _shape2,
+                              const Eigen::Isometry3d& _T2,
+                              std::vector<Contact>* _result)
+{
+  dynamics::BoxShape* box1 = static_cast<dynamics::BoxShape*>(_shape1);
+  dynamics::BoxShape* box2 = static_cast<dynamics::BoxShape*>(_shape2);
+
+  return collideBoxBox(box1->getSize(), _T1, box2->getSize(), _T2, _result);
+}
 
 }  // namespace collision
 }  // namespace dart
-
-#endif  // DART_COLLISION_DART_DARTCOLLISIONDETECTOR_H_

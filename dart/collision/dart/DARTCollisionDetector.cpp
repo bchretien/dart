@@ -40,7 +40,11 @@
 
 #include "dart/dynamics/Shape.h"
 #include "dart/dynamics/BodyNode.h"
+#include "dart/dynamics/BoxShape.h"
+#include "dart/dynamics/EllipsoidShape.h"
+#include "dart/dynamics/CylinderShape.h"
 #include "dart/collision/dart/DARTCollide.h"
+#include "dart/collision/dart/NarrowPhaseAlgorithm.h"
 
 namespace dart {
 namespace collision {
@@ -93,18 +97,30 @@ bool DARTCollisionDetector::detectCollision(bool /*_checkAllCollisions*/,
         {
           int currContactNum = mContacts.size();
 
+          // Select the narrow phase algorithm according to two collision shapes
+          NarrowPhaseAlgorithm* narrowPhaseAlgorithm
+              = selectNarrowPhaseAlgorithm(BodyNode1->getCollisionShape(k),
+                                           BodyNode2->getCollisionShape(l));
+
           contacts.clear();
-          collide(BodyNode1->getCollisionShape(k),
-                  BodyNode1->getTransform()
-                  * BodyNode1->getCollisionShape(k)->getLocalTransform(),
-                  BodyNode2->getCollisionShape(l),
-                  BodyNode2->getTransform()
-                  * BodyNode2->getCollisionShape(l)->getLocalTransform(),
-                  &contacts);
 
-          unsigned int numContacts = contacts.size();
+          // Debug code
+          if (narrowPhaseAlgorithm == NULL)
+            continue;
 
-          for (unsigned int m = 0; m < numContacts; ++m)
+          //
+          narrowPhaseAlgorithm->collide(
+                BodyNode1->getCollisionShape(k),
+                BodyNode1->getTransform()
+                * BodyNode1->getCollisionShape(k)->getLocalTransform(),
+                BodyNode2->getCollisionShape(l),
+                BodyNode2->getTransform()
+                * BodyNode2->getCollisionShape(l)->getLocalTransform(),
+                &contacts);
+
+          size_t numContacts = contacts.size();
+
+          for (size_t m = 0; m < numContacts; ++m)
           {
             Contact contactPair;
             contactPair = contacts[m];
@@ -177,6 +193,115 @@ bool DARTCollisionDetector::detectCollision(CollisionNode* _collNode1,
   }
 
   return contacts.size() > 0 ? true : false;
+}
+
+//==============================================================================
+NarrowPhaseAlgorithm* DARTCollisionDetector::selectNarrowPhaseAlgorithm(
+    const dynamics::Shape* _shape1, const dynamics::Shape* _shape2)
+{
+  dynamics::Shape::ShapeType type1 = _shape1->getShapeType();
+  dynamics::Shape::ShapeType type2 = _shape2->getShapeType();
+
+  switch(type1)
+  {
+    case dynamics::Shape::BOX:
+    {
+      const dynamics::BoxShape* box0 = static_cast<const dynamics::BoxShape*>(_shape1);
+
+      switch(type2)
+      {
+        case dynamics::Shape::BOX:
+        {
+          return &mBoxBoxAlgorithm;
+        }
+        case dynamics::Shape::ELLIPSOID:
+        {
+          return NULL;
+        }
+        case dynamics::Shape::CYLINDER:
+        {
+          //----------------------------------------------------------
+          // NOT SUPPORT CYLINDER
+          //----------------------------------------------------------
+          return NULL;
+        }
+        default:
+        {
+          return NULL;
+        }
+      }
+
+      break;
+    }
+    case dynamics::Shape::ELLIPSOID:
+    {
+      const dynamics::EllipsoidShape* ellipsoid0 = static_cast<const dynamics::EllipsoidShape*>(_shape1);
+
+      switch(type2)
+      {
+        case dynamics::Shape::BOX:
+        {
+          return NULL;
+        }
+        case dynamics::Shape::ELLIPSOID:
+        {
+          return NULL;
+        }
+        case dynamics::Shape::CYLINDER:
+        {
+          //----------------------------------------------------------
+          // NOT SUPPORT CYLINDER
+          //----------------------------------------------------------
+          return NULL;
+        }
+        default:
+          return false;
+
+          break;
+      }
+
+      break;
+    }
+    case dynamics::Shape::CYLINDER:
+    {
+      //----------------------------------------------------------
+      // NOT SUPPORT CYLINDER
+      //----------------------------------------------------------
+      const dynamics::CylinderShape* cylinder0 = static_cast<const dynamics::CylinderShape*>(_shape1);
+
+      Eigen::Vector3d dimTemp0(cylinder0->getRadius() * sqrt(2.0),
+                               cylinder0->getRadius() * sqrt(2.0),
+                               cylinder0->getHeight());
+      switch(type2)
+      {
+        case dynamics::Shape::BOX:
+        {
+          return NULL;
+        }
+        case dynamics::Shape::ELLIPSOID:
+        {
+          return NULL;
+        }
+        case dynamics::Shape::CYLINDER:
+        {
+          //----------------------------------------------------------
+          // NOT SUPPORT CYLINDER
+          //----------------------------------------------------------
+          return NULL;
+        }
+        default:
+        {
+          return false;
+        }
+      }
+
+      break;
+    }
+    default:
+      return false;
+
+      break;
+  }
 }
 
 }  // namespace collision
